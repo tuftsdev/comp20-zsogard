@@ -1,0 +1,20 @@
+#title {
+	font-family: Verdana, "Times New Roman", Serif;
+	font-size: 24px;
+	margin-left: 5%;
+	margin-right: 5%;
+	text-align: center;
+
+}
+
+#lyrics {
+	color: blue;
+	padding: 10px;
+	text-align: center;
+	font-family: Verdana, "Times New Roman", Serif;
+}
+
+#music_video {
+	display: block;
+	margin: 0 auto;
+}

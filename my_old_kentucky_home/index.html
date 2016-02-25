@@ -16,21 +16,37 @@
 <script>
 	// Complete this section and create a CSS file named style.css
 
+	var lyrics = ["The sun shines bright in My Old Kentucky Home",
+					"'Tis summer, the people are gay",
+					"The corn-top's ripe and the meadow's in the bloom",
+					"While the birds make music all the day",
+
+					"The young folks roll on the little cabin floor",
+					"All merry, all happy and bright",
+					"By 'n' by hard times comes a knocking at the door",
+					"Then My Old Kentucky Home, good night!",
+
+					//Chorus
+					"Weep no more my lady",
+					"Oh weep no more today",
+					"We will sing one song",
+					"For My Old Kentucky Home",
+					"For My Old Kentucky Home, far away"];
+
 	var video = document.getElementById("music_video");
 	video.addEventListener("timeupdate", function() {
 		var time = Math.floor(video.currentTime);
-		console.log(time);
 		var lyric = document.getElementById("lyrics");
 		switch(time)
 		{
 			case 1:
-				lyric.innerHTML = "New text!";
+				lyric.innerHTML = lyrics[0];
 				break;
 			case 2:
-				lyric.innerHTML = "hello!";
+				lyric.innerHTML = lyrics[1];
 				break;
 			case 3:
-				lyric.innerHTML = "how's it goin";
+				lyric.innerHTML = lyrics[2];
 				break;
 			default:
 				break;
