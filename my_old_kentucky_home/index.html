@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>My Old Kentucky Home</title>
+<link rel="stylesheet" href="style.css" type="text/css" />
+</head>
+
+<body>
+
+<h1 id="title">My Old Kentucky Home</h1>
+
+<video src="https://www.cs.tufts.edu/comp/20/my_old_kentucky_home.mp4" id="music_video" controls></video>
+<div id="lyrics"></div>
+
+<script>
+	// Complete this section and create a CSS file named style.css
+
+	var video = document.getElementById("music_video");
+	video.addEventListener("timeupdate", function() {
+		var time = Math.floor(video.currentTime);
+		console.log(time);
+		var lyric = document.getElementById("lyrics");
+		switch(time)
+		{
+			case 1:
+				lyric.innerHTML = "New text!";
+				break;
+			case 2:
+				lyric.innerHTML = "hello!";
+				break;
+			case 3:
+				lyric.innerHTML = "how's it goin";
+				break;
+			default:
+				break;
+		}
+	}, true);
+</script>
+</body>
+</html>	
