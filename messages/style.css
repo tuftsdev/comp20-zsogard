@@ -1,1 +1,16 @@
-/* Your CSS here... */
+h1 {
+	font-family: Verdana, "Times New Roman", Serif;
+	font-size: 24px;
+	margin-left: 5%;
+	margin-right: 5%;
+	text-align: center;
+	color: blue;
+
+}
+
+#messages {
+	color: green;
+	padding: 10px;
+	text-align: center;
+	font-family: Verdana, "Times New Roman", Serif;
+}
