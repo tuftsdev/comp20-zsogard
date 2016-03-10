@@ -4,48 +4,42 @@
 
 	<head>
 		<title>Geolocation Map Example</title>
-		<meta charset="utf-8" />
 		<meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
 		<script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?sensor=true"></script>
 		<link rel="stylesheet" href="geolocation_map_style.css" />
 		
 		<script>
-
 			var myLat = 0;
 			var myLng = 0;
-			var login = "KIM_ROSA";
-
+			var request = new XMLHttpRequest();
 			var me = new google.maps.LatLng(myLat, myLng);
 			var myOptions = {
-					zoom: 13, // The larger the zoom number, the bigger the zoom
-					center: me,
-					mapTypeId: google.maps.MapTypeId.ROADMAP
-				};			
+						zoom: 13, // The larger the zoom number, the bigger the zoom
+						center: me,
+						mapTypeId: google.maps.MapTypeId.ROADMAP
+					};
 			var map;
 			var marker;
-			var data;
-			var myOptions;
 			var infowindow = new google.maps.InfoWindow();
-
+			
 			function init()
 			{
 				map = new google.maps.Map(document.getElementById("map_canvas"), myOptions);
 				getMyLocation();
 			}
-
+			
 			function getMyLocation() {
 				if (navigator.geolocation) { // the navigator.geolocation object is supported on your browser
 					navigator.geolocation.getCurrentPosition(function(position) {
 						myLat = position.coords.latitude;
 						myLng = position.coords.longitude;
-						makeRequest();
+						renderMap();
 					});
 				}
 				else {
 					alert("Geolocation is not supported by your web browser.  What a shame!");
 				}
 			}
-
 			function renderMap()
 			{
 				me = new google.maps.LatLng(myLat, myLng);
@@ -65,28 +59,6 @@
 					infowindow.setContent(marker.title);
 					infowindow.open(map, marker);
 				});
-
-				console.log(data);
-			}
-
-			function makeRequest()
-			{
-				var request = new XMLHttpRequest();
-				// Step 1: Make request
-				request.open("POST", "https://defense-in-derpth.herokuapp.com/sendLocation", true);
-				request.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-				// Step 2: Handle the response
-				request.onreadystatechange = function() {
-					console.log(request.readyState);
-					// Step 3: Data is ready --there is a response!
-					if (request.readyState == 4 && request.status == 200) {
-						var raw = request.responseText;
-						data = JSON.parse(raw);
-						renderMap();
-					}
-				};
-				// Step 3: Fire off the request
-				request.send("login=" + login + "&lat=" + myLat + "&lng=" + myLng);
 			}
 		</script>
 	</head>
