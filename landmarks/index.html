@@ -22,10 +22,7 @@
 					mapTypeId: google.maps.MapTypeId.ROADMAP
 				};			
 			var map;
-			var marker;
 			var data;
-			var myOptions;
-			var infowindow = new google.maps.InfoWindow();
 
 			function init()
 			{
@@ -53,18 +50,41 @@
 				// Update map and go there...
 				map.panTo(me);
 	
+				var myMarker;
+				var myInfoWindow;
 				// Create a marker
-				marker = new google.maps.Marker({
+				myMarker = new google.maps.Marker({
 					position: me,
-					title: "Here I Am!"
+					title: login
 				});
-				marker.setMap(map);
+				myMarker.setMap(map);
 					
 				// Open info window on click of marker
-				google.maps.event.addListener(marker, 'click', function() {
-					infowindow.setContent(marker.title);
-					infowindow.open(map, marker);
+				myInfoWindow = new google.maps.InfoWindow();
+				google.maps.event.addListener(myMarker, 'click', function() {
+					myInfoWindow.setContent(myMarker.title);
+					myInfoWindow.open(map, myMarker);
 				});
+
+				var markers = [];
+				var infoWindows = [];
+
+				//make a marker, eventListener, and infoWindow for each person
+				for (i = 0; i < data.people.length; i++)
+				{
+					markers.push(new google.maps.Marker({
+						position: new google.maps.LatLng(data.people[i].lat, data.people[i].lng),
+						title: data.people[i].login
+					}));
+					markers[i].setMap(map);
+
+					// Open info window on click of marker
+					infoWindows.push(new google.maps.InfoWindow());
+					google.maps.event.addListener(markers[i], 'click', function() {
+						infoWindows[i].setContent(markers[i].title);
+						infoWindows[i].open(map, markers[i]);
+					});					
+				}
 
 				console.log(data);
 			}
@@ -77,7 +97,6 @@
 				request.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
 				// Step 2: Handle the response
 				request.onreadystatechange = function() {
-					console.log(request.readyState);
 					// Step 3: Data is ready --there is a response!
 					if (request.readyState == 4 && request.status == 200) {
 						var raw = request.responseText;
