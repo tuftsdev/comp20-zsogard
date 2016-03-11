@@ -17,7 +17,7 @@
 
 			var me = new google.maps.LatLng(myLat, myLng);
 			var myOptions = {
-					zoom: 13, // The larger the zoom number, the bigger the zoom
+					zoom: 15, // The larger the zoom number, the bigger the zoom
 					center: me,
 					mapTypeId: google.maps.MapTypeId.ROADMAP
 				};			
@@ -31,10 +31,8 @@
 			}
 
 			function getMyLocation() {
-				console.log("getmylocation");
 				if (navigator.geolocation) { // the navigator.geolocation object is supported on your browser
 					navigator.geolocation.getCurrentPosition(function(position) {
-						console.log('hmm');
 						myLat = position.coords.latitude;
 						myLng = position.coords.longitude;
 						makeRequest();
@@ -47,40 +45,23 @@
 
 			function renderMap()
 			{
-				me = new google.maps.LatLng(myLat, myLng);
-				
 				// Update map and go there...
+				me = new google.maps.LatLng(myLat, myLng);
 				map.panTo(me);
-				console.log(data);
-	
-				// Create a marker
-				/*
-				myMarker = new google.maps.Marker({
-					position: me,
-					title: login,
-					closestLandmark: "None"
-				});
-				myMarker.setMap(map);
-				*/
 					
-				// Open info window on click of marker
+				// Create infoWindow object to use for markers
 				infoWindow = new google.maps.InfoWindow();
 
-				/*
-				google.maps.event.addListener(myMarker, 'click', function() {
-					infoWindow.setContent(myMarker.title + "<br>" + "Closest landmark: " + this.closestLandmark);
-					infoWindow.open(map, myMarker);
-				});
-				*/
-
-				markers = [];
-				myIndex = -1;
+				markers = []; //one marker for each person in JSON response
+				myIndex = -1; //index of markers array for my location
 
 				//make a marker, eventListener, and infoWindow for each person
 				for (i = 0; i < data.people.length; i++)
 				{
 					var lat = data.people[i].lat;
 					var lng = data.people[i].lng;
+
+					//make a new marker and attach to map
 					markers.push(new google.maps.Marker({
 						position: new google.maps.LatLng(lat, lng),
 						title: data.people[i].login,
@@ -89,6 +70,7 @@
 					}));
 					markers[i].setMap(map);
 
+					//if this person is me, set special icon and find closest landmark
 					if (data.people[i].login == login)
 					{
 						myIndex = i;
@@ -101,6 +83,7 @@
 							infoWindow.open(map, this);
 						});	
 					}
+					//otherwise set different icon and show distance
 					else
 					{
 						markers[i].icon = "awesome-face.png";
@@ -111,7 +94,7 @@
 					}
 				}
 
-				landmarkers = [];
+				landmarkers = []; //one landmark marker for each landmark in JSON response
 
 				//make a marker, eventListener, and infoWindow for each person
 				for (i = 0; i < data.landmarks.length; i++)
@@ -125,6 +108,7 @@
 					var closestLng = 0;
 					if (dist <= 1.00)
 					{
+						//keep track of closest landmark's name, lat, and lng
 						if (dist < closestDist)
 						{
 							closestName = data.landmarks[i].properties.Location_Name;
@@ -133,6 +117,7 @@
 							closestLng = lng;
 						}
 
+						//make marker for this landmark and attach to map
 						landmarkers.push(new google.maps.Marker({
 							position: new google.maps.LatLng(lat, lng),
 							distance: dist,
@@ -141,24 +126,25 @@
 						}));
 						landmarkers[i].setMap(map);
 
-						// Open info window on click of marker
+						//Show this landmark's distance and details in infoWindow
 						google.maps.event.addListener(landmarkers[i], 'click', function() {
-							infoWindow.setContent(this.properties.Location_Name + "<br>" + "Distance away (mi): " + this.distance + "<br>" + "Details: " + this.properties.Details);
+							infoWindow.setContent(this.properties.Location_Name + "<br>" + "Distance away (mi): " + this.distance + "<br>" + this.properties.Details);
 							infoWindow.open(map, this);
 						});
 					}					
 				}
 
+				//set my location's closest landmark and its distance
 				markers[myIndex].closestLandmark = closestName;
 				markers[myIndex].landmarkDist = closestDist;
 
-
+				//make path for polyline between me and closest landmark
 				var pathCoords = [
 				    {lat: myLat, lng: myLng},
 				    {lat: closestLat, lng: closestLng}
 				];
 
-
+				//create polyline and attach to map
 				var line = new google.maps.Polyline({
 				    path: pathCoords,
 				    geodesic: true,
@@ -167,9 +153,7 @@
 				    strokeWeight: 2
 
 				});
-
 				line.setMap(map);
-
 			}
 
 			function makeRequest()
@@ -193,6 +177,7 @@
 
 			function haversine(lat1, lon1, lat2, lon2)
 			{
+				//returns haversine distance in miles between two points
 				var R = 6371000; // metres
 				var latrad1 = toRadians(lat1);
 				var latrad2 = toRadians(lat2);
@@ -212,7 +197,7 @@
 
 			function toRadians(Value)
 			{
-    			/** Converts numeric degrees to radians */
+    			//Converts numeric degrees to radians
     			return Value * Math.PI / 180;
 			}
 		</script>
