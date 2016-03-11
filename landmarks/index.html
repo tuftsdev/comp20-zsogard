@@ -31,8 +31,10 @@
 			}
 
 			function getMyLocation() {
+				console.log("getmylocation");
 				if (navigator.geolocation) { // the navigator.geolocation object is supported on your browser
 					navigator.geolocation.getCurrentPosition(function(position) {
+						console.log('hmm');
 						myLat = position.coords.latitude;
 						myLng = position.coords.longitude;
 						makeRequest();
@@ -77,12 +79,12 @@
 				//make a marker, eventListener, and infoWindow for each person
 				for (i = 0; i < data.people.length; i++)
 				{
-
 					var lat = data.people[i].lat;
 					var lng = data.people[i].lng;
 					markers.push(new google.maps.Marker({
 						position: new google.maps.LatLng(lat, lng),
 						title: data.people[i].login,
+						icon: "",
 						distance: Number((haversine(lat, lng, myLat, myLng)).toFixed(2)),
 					}));
 					markers[i].setMap(map);
@@ -92,14 +94,16 @@
 						myIndex = i;
 						markers[i].closestLandmark = "None";
 						markers[i].landmarkDist = 0;
+						markers[i].icon = "goldfish.jpg";
 
 						google.maps.event.addListener(markers[i], 'click', function() {
 							infoWindow.setContent(this.title + "<br>" + "Closest landmark: " + this.closestLandmark + " (" + this.landmarkDist + " mi away)");
 							infoWindow.open(map, this);
-						});		
+						});	
 					}
 					else
 					{
+						markers[i].icon = "awesome-face.png";
 						google.maps.event.addListener(markers[i], 'click', function() {
 							infoWindow.setContent(this.title + "<br>" + "Distance away (mi): " + this.distance);
 							infoWindow.open(map, this);
@@ -109,7 +113,7 @@
 
 				landmarkers = [];
 
-				//make a marker, eventListner, and infoWindow for each person
+				//make a marker, eventListener, and infoWindow for each person
 				for (i = 0; i < data.landmarks.length; i++)
 				{
 					var lat = data.landmarks[i].geometry.coordinates[1];
@@ -117,18 +121,23 @@
 					var dist = Number((haversine(lat, lng, myLat, myLng)).toFixed(2));
 					var closestDist = 1.1;
 					var closestName = "";
+					var closestLat = 0;
+					var closestLng = 0;
 					if (dist <= 1.00)
 					{
 						if (dist < closestDist)
 						{
 							closestName = data.landmarks[i].properties.Location_Name;
 							closestDist = dist;
+							closestLat = lat;
+							closestLng = lng;
 						}
 
 						landmarkers.push(new google.maps.Marker({
 							position: new google.maps.LatLng(lat, lng),
 							distance: dist,
-							properties: data.landmarks[i].properties
+							properties: data.landmarks[i].properties,
+							icon: "landmark.png"
 						}));
 						landmarkers[i].setMap(map);
 
@@ -142,6 +151,25 @@
 
 				markers[myIndex].closestLandmark = closestName;
 				markers[myIndex].landmarkDist = closestDist;
+
+
+				var pathCoords = [
+				    {lat: myLat, lng: myLng},
+				    {lat: closestLat, lng: closestLng}
+				];
+
+
+				var line = new google.maps.Polyline({
+				    path: pathCoords,
+				    geodesic: true,
+				    strokeColor: '#FF0000',
+				    strokeOpacity: 1.0,
+				    strokeWeight: 2
+
+				});
+
+				line.setMap(map);
+
 			}
 
 			function makeRequest()
