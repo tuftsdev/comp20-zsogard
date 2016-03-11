@@ -27,12 +27,15 @@
 			function init()
 			{
 				map = new google.maps.Map(document.getElementById("map_canvas"), myOptions);
+				console.log("here");
 				getMyLocation();
 			}
 
 			function getMyLocation() {
 				if (navigator.geolocation) { // the navigator.geolocation object is supported on your browser
+					console.log("there");
 					navigator.geolocation.getCurrentPosition(function(position) {
+						console.log("here2");
 						myLat = position.coords.latitude;
 						myLng = position.coords.longitude;
 						makeRequest();
@@ -49,44 +52,83 @@
 				
 				// Update map and go there...
 				map.panTo(me);
+				console.log(data);
 	
-				var myMarker;
-				var myInfoWindow;
 				// Create a marker
 				myMarker = new google.maps.Marker({
 					position: me,
-					title: login
+					title: login,
+					closestLandmark: "None"
 				});
 				myMarker.setMap(map);
 					
 				// Open info window on click of marker
-				myInfoWindow = new google.maps.InfoWindow();
+				infoWindow = new google.maps.InfoWindow();
+
 				google.maps.event.addListener(myMarker, 'click', function() {
-					myInfoWindow.setContent(myMarker.title);
-					myInfoWindow.open(map, myMarker);
+					infoWindow.setContent(myMarker.title + "<br>" + "Closest landmark: " + this.closestLandmark);
+					infoWindow.open(map, myMarker);
 				});
 
-				var markers = [];
-				var infoWindows = [];
+				markers = [];
 
 				//make a marker, eventListener, and infoWindow for each person
-				for (i = 0; i < data.people.length; i++)
+				for (i = 0; i < data.people.length - 1; i++)
 				{
+					if (data.people[i].login == login)
+					{
+						continue;
+					}
+					var lat = data.people[i].lat;
+					var lng = data.people[i].lng;
 					markers.push(new google.maps.Marker({
-						position: new google.maps.LatLng(data.people[i].lat, data.people[i].lng),
-						title: data.people[i].login
+						position: new google.maps.LatLng(lat, lng),
+						title: data.people[i].login,
+						distance: Number((haversine(lat, lng, myLat, myLng)).toFixed(2)),
 					}));
 					markers[i].setMap(map);
 
 					// Open info window on click of marker
-					infoWindows.push(new google.maps.InfoWindow());
 					google.maps.event.addListener(markers[i], 'click', function() {
-						infoWindows[i].setContent(markers[i].title);
-						infoWindows[i].open(map, markers[i]);
+						infoWindow.setContent(this.title + "<br>" + "Distance away (mi): " + this.distance);
+						infoWindow.open(map, this);
 					});					
 				}
 
-				console.log(data);
+				landmarkers = [];
+
+				//make a marker, eventListner, and infoWindow for each person
+				for (i = 0; i < data.landmarks.length; i++)
+				{
+					var lat = data.landmarks[i].geometry.coordinates[1];
+					var lng = data.landmarks[i].geometry.coordinates[0];
+					var dist = Number((haversine(lat, lng, myLat, myLng)).toFixed(2));
+					var closestDist = 1.1;
+					var closestName = "";
+					if (dist <= 1.00)
+					{
+						if (dist < closestDist)
+						{
+							closestName = data.landmarks[i].properties.Location_Name;
+							closestDist = dist;
+						}
+
+						landmarkers.push(new google.maps.Marker({
+							position: new google.maps.LatLng(lat, lng),
+							distance: dist,
+							properties: data.landmarks[i].properties
+						}));
+						landmarkers[i].setMap(map);
+
+						// Open info window on click of marker
+						google.maps.event.addListener(landmarkers[i], 'click', function() {
+							infoWindow.setContent(this.properties.Location_Name + "<br>" + "Distance away (mi): " + this.distance + "<br>" + "Details: " + this.properties.Details);
+							infoWindow.open(map, this);
+						});
+					}					
+				}
+
+				myMarker.closestLandmark = closestName;
 			}
 
 			function makeRequest()
@@ -98,6 +140,7 @@
 				// Step 2: Handle the response
 				request.onreadystatechange = function() {
 					// Step 3: Data is ready --there is a response!
+					console.log(request.readyState);
 					if (request.readyState == 4 && request.status == 200) {
 						var raw = request.responseText;
 						data = JSON.parse(raw);
@@ -106,6 +149,31 @@
 				};
 				// Step 3: Fire off the request
 				request.send("login=" + login + "&lat=" + myLat + "&lng=" + myLng);
+			}
+
+			function haversine(lat1, lon1, lat2, lon2)
+			{
+				var R = 6371000; // metres
+				var latrad1 = toRadians(lat1);
+				var latrad2 = toRadians(lat2);
+				var latdist = toRadians(lat2-lat1);
+				var londist = toRadians(lon2-lon1);
+
+				var a = Math.sin(latdist/2) * Math.sin(latdist/2) +
+				        Math.cos(latrad1) * Math.cos(latrad2) *
+				        Math.sin(londist/2) * Math.sin(londist/2);
+				var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+
+				var d = R * c;
+				d  = d / 1609.34; //convert from meters to miles
+
+				return d;
+			}
+
+			function toRadians(Value)
+			{
+    			/** Converts numeric degrees to radians */
+    			return Value * Math.PI / 180;
 			}
 		</script>
 	</head>
