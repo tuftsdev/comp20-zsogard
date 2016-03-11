@@ -27,15 +27,12 @@
 			function init()
 			{
 				map = new google.maps.Map(document.getElementById("map_canvas"), myOptions);
-				console.log("here");
 				getMyLocation();
 			}
 
 			function getMyLocation() {
 				if (navigator.geolocation) { // the navigator.geolocation object is supported on your browser
-					console.log("there");
 					navigator.geolocation.getCurrentPosition(function(position) {
-						console.log("here2");
 						myLat = position.coords.latitude;
 						myLng = position.coords.longitude;
 						makeRequest();
@@ -55,30 +52,32 @@
 				console.log(data);
 	
 				// Create a marker
+				/*
 				myMarker = new google.maps.Marker({
 					position: me,
 					title: login,
 					closestLandmark: "None"
 				});
 				myMarker.setMap(map);
+				*/
 					
 				// Open info window on click of marker
 				infoWindow = new google.maps.InfoWindow();
 
+				/*
 				google.maps.event.addListener(myMarker, 'click', function() {
 					infoWindow.setContent(myMarker.title + "<br>" + "Closest landmark: " + this.closestLandmark);
 					infoWindow.open(map, myMarker);
 				});
+				*/
 
 				markers = [];
+				myIndex = -1;
 
 				//make a marker, eventListener, and infoWindow for each person
-				for (i = 0; i < data.people.length - 1; i++)
+				for (i = 0; i < data.people.length; i++)
 				{
-					if (data.people[i].login == login)
-					{
-						continue;
-					}
+
 					var lat = data.people[i].lat;
 					var lng = data.people[i].lng;
 					markers.push(new google.maps.Marker({
@@ -88,11 +87,24 @@
 					}));
 					markers[i].setMap(map);
 
-					// Open info window on click of marker
-					google.maps.event.addListener(markers[i], 'click', function() {
-						infoWindow.setContent(this.title + "<br>" + "Distance away (mi): " + this.distance);
-						infoWindow.open(map, this);
-					});					
+					if (data.people[i].login == login)
+					{
+						myIndex = i;
+						markers[i].closestLandmark = "None";
+						markers[i].landmarkDist = 0;
+
+						google.maps.event.addListener(markers[i], 'click', function() {
+							infoWindow.setContent(this.title + "<br>" + "Closest landmark: " + this.closestLandmark + " (" + this.landmarkDist + " mi away)");
+							infoWindow.open(map, this);
+						});		
+					}
+					else
+					{
+						google.maps.event.addListener(markers[i], 'click', function() {
+							infoWindow.setContent(this.title + "<br>" + "Distance away (mi): " + this.distance);
+							infoWindow.open(map, this);
+						});								
+					}
 				}
 
 				landmarkers = [];
@@ -128,7 +140,8 @@
 					}					
 				}
 
-				myMarker.closestLandmark = closestName;
+				markers[myIndex].closestLandmark = closestName;
+				markers[myIndex].landmarkDist = closestDist;
 			}
 
 			function makeRequest()
@@ -140,7 +153,6 @@
 				// Step 2: Handle the response
 				request.onreadystatechange = function() {
 					// Step 3: Data is ready --there is a response!
-					console.log(request.readyState);
 					if (request.readyState == 4 && request.status == 200) {
 						var raw = request.responseText;
 						data = JSON.parse(raw);
