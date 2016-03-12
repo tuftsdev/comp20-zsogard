@@ -4,9 +4,33 @@
 
 <head>
 	<title>Captain's Log</title>
+	<meta charset="utf-8" />
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js"></script>
 	<script>
-	  // Your work will be done here...
+	function printMessages()
+	{
+		output = "";
+		for (key in localStorage) {
+			console.log(localStorage[key])
+			output = output + "<p>" + localStorage[key] + "</p>\n";
+		}
+		$("#log").html(output);
+	}
+
+	$(document).ready(function(){
+		console.log("this should only happen once?");
+   		printMessages();
+ 	});
+
+	$(document).keypress(function(e) {
+	    if(e.which == 13) {
+	        txt = $("#msg")[0].value;
+	        console.log("keypress: " + txt);
+			localStorage[new Date().getTime()] = txt;
+			printMessages();
+
+	    }
+	});
 	</script>
 </head>
 
