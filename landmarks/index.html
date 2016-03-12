@@ -96,16 +96,17 @@
 
 				landmarkers = []; //one landmark marker for each landmark in JSON response
 
+				var closestDist = 1.1;
+				var closestName = "";
+				var closestLat = 0;
+				var closestLng = 0;
 				//make a marker, eventListener, and infoWindow for each person
 				for (i = 0; i < data.landmarks.length; i++)
 				{
 					var lat = data.landmarks[i].geometry.coordinates[1];
 					var lng = data.landmarks[i].geometry.coordinates[0];
 					var dist = Number((haversine(lat, lng, myLat, myLng)).toFixed(2));
-					var closestDist = 1.1;
-					var closestName = "";
-					var closestLat = 0;
-					var closestLng = 0;
+
 					if (dist <= 1.00)
 					{
 						//keep track of closest landmark's name, lat, and lng
