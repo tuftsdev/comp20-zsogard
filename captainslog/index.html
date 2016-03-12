@@ -18,17 +18,17 @@
 	}
 
 	$(document).ready(function(){
-		console.log("this should only happen once?");
    		printMessages();
  	});
 
 	$(document).keypress(function(e) {
 	    if(e.which == 13) {
 	        txt = $("#msg")[0].value;
-	        console.log("keypress: " + txt);
-			localStorage[new Date().getTime()] = txt;
+	        date = new Date();
+			dateString = date.toUTCString();
+			localStorage[date.getTime()] = dateString + " - " + txt;
 			printMessages();
-
+			$("#msg").val('');
 	    }
 	});
 	</script>
