@@ -22,7 +22,7 @@
    		printMessages();
  	});
 
-	$(document).keypress(function(e) {
+	$(document).keyup(function(e) {
 	    if(e.which == 13) {
 	        txt = $("#msg")[0].value;
 	        date = new Date();
