@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>Security and Privacy Assessment of secure-coast-91078.herokuapp.com</title>
+</head>
+<body>
+
+<h1>Introduction</h1>
+<p>The purpose of this assessment was to test the security and privacy of a web app developed by Jenny Xu for Tufts University's Comp 20 Assignments 2 and 3. The web app is currently running at http://secure-coast-91078.herokuapp.com as of April 18, 2016. The web app has 3 REST API methods. A POST to /sendLocation with JSON containing "login", "lat", and "lng" properties returns an array of all people who have checked in to the server as well as an array of landmarks within a mile of that location. A request without proper JSON should return an error. A GET to /checkins.json with a login parameter should return all checkin records that have the same login. If no login is provided, the response should be an empty array. A GET to the root of the page returns a formatted list of all usernames, where they have checked in, and at what time.</p>
+
+<h1>Methodology</h1>
+<p>I used Firefox and curl to test the behavior of / and /checkins.json with different inputs to login. I also used Postman to send custom POSTs to /sendLocation and test its behavior. All of this testing was "black box". "White box" testing was then performed by doing static analysis of the source code and looking for logic flaws.</p>
+
+<h1>Abstract of Findings</h1>
+<p>The assessment found one easily executed and highly damaging attack wherein an attacker can cause the application to run whatever malicious code they want it to. I also found one bad security practice that enables any application to view the database's information which is a privacy concern. Finally, a security flaw was found in which the application does not know how to handle input it does not expect. This is not a huge concern as it does not crash the server but a bad practice nonetheless.</p>
+<h1>Issues Found</h1>
+<h4>Issue: Cross-Site Scripting (XSS)</h4>
+<p>Location: Attack performed on /sendLocation. Results can be seen on /.</p>
+<p style="color:red;"> Severity: High</p>
+<p>This security flaw allows an attacker to force the application to run arbitrary, potentially malicious scripts when the root page is loaded.</p>
+<p>Description of Issue: I set the login parameter of a POST to /sendLocation equal to <code>&lt;script type="text/javascript"&gt;window.location.href = "http://4chan.org"&lt;/script&gt;</code> When a GET is made to the root page, the HTML containing the script is loaded, and the user is redirected to 4chan.org. More malicious scripts could be devised, but this sufficies to show the gravity of the issue. The issue remains permanent until the database is cleared of this malicious entry.</p>
+<img src=xssDescription.png alt="curl shows the HTML that the page serves which any browser such as Firefox would then see and redirect the user to 4chan.org."</img>
+<p>Proof of Vulnerability: See below screenshot. <code>http://secure-coast-91078.herokuapp.com</code> was typed into the browser and the result was 4chan.org<p>
+	<img src=xssProof.png alt="The user is redirected to 4chan.org"</img>
+<p>Resolution: The server code must sanitize the JSON input within /sendLocation before storing it in the database. This can be done with a simple sanitize() command run on each value of the JSON object before inserting it into mongoDB.</p>
+
+<h4>Issue: Cross Origin Resource Sharing Enabled for All</h4>
+<p>Location: Attack performed on /sendLocation.</p>
+<p style="color:orange;"> Severity: Medium</p>
+<p>This security flaw allows anyone to send a POST request to /sendLocation and receive data about users' locations and names back. Since the intent of this server is to only serve data to the user's Assignment 2, this is a privacy concern. Anyone can make an XHR to the server and receive personally identifying information back.</p>
+<p>Description of Issue: I created a short script using jQuery (for ease of reading) to send a POST to the server and log the data that was received. When running this on an HTTP server, I can open this script with a web browser and view the server's entire database in my console. This is a privacy concern because anyone can view this data when it should only be made available to Jenny Xu's Assignment 2.</p>
+<img src=corsDescription.png alt="A simple script which makes a cross-domain POST to the server and logs the response in the console."</img>
+<p>Proof of Vulnerability: See below screenshot. The console shows sensitive personal information and can be run on any domain.<p>
+	<img src=corsProof.png alt="A list of users and their locations shown in the browser's console."</img>
+<p>Resolution: Do not use the wildcard value for the "Access-Control-Allow-Origin" header. Instead, set this to the Assignment 2's domain. All other domains would receive a CORS error when trying to make a POST to the website. This protects the privacy of the information.</p>
+
+<h4>Issue: Internal Server Error Caused by Bad Input</h4>
+<p>Location: Attack performed on /sendLocation.</p>
+<p style="color:yellow;"> Severity: Low</p>
+<p>This security flaw allows the user to cause an internal server error (Error code 500) when sending bad JSON to the server. The security risk is low because it does not crash the server, but it does throw an exception in the execution of the server-side script which can lead to undefined behavior.</p>
+<p>Description of Issue: I formed a JSON string which contained <code>"lat": "asdf"</code>. Since this value was expected to be either a float or a numeric string, the server threw an exception when trying to parse the string to a float because the latitude cannot be converted to any meaningful value.</p>
+<img src=errorDescription.png alt="A JSON string formed in Postman which contains a nonsense value for the latitude."</img>
+<p>Proof of Vulnerability: See below screenshot. The server returns a 500 Internal Server Error.<p>
+	<img src=errorProof.png alt="500 Internal Server Error"</img>
+<p>Resolution: Wrap the parseFloat in the server-side code in a try-catch block and handle the exception by serving a 400 Bad Request status code back to the user.</p>
+<h1>Conclusion</h1>
+<p>The issues that this assessment found range widely in severity. However, they should all be fixed as they lead to big security and privacy vulnerabilities. They are all very easy bugs to fix, each of them requiring only a handful of extra lines of code. Another flaw that should be mentioned is that /checkins.json does not work according to spec. No matter what is passed as the login parameter, all checkins are displayed rather than those belonging to the specific login. In any case, all of the security vulnerabilities could be easily identified along with other potential vulnerabilities with a static analyzer such as Veracode which would cost a few hundred dollars though an official quote can be requested on their website. In an age where security and privacy vulnerabilities can cost companies millions of dollars, this is very much worth the price.</p>
+</body>
+</html>

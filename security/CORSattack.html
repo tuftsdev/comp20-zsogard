@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+<meta charset="utf-8" />
+<title>CORS Example</title>
+</head>
+<body>
+<script>
+
+	
+	$.post("http://secure-coast-91078.herokuapp.com/sendLocation", {"login": "zach", "lat": 42.4, "lng": -71.1}, function(response)
+	{
+		console.log(response);
+		//response contains the entire information from the database, something this domain shouldn't be able to see!
+	}, "json");
+
+
+</script>
+<div id="response"></div>
+</body>
+</html>
